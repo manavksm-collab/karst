@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Scroll down through a cave lit by your headlamp, past the bottom of the deepest known cave, and on down the Kola borehole to 12,262 m.">
+<meta name="theme-color" content="#0b0908">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Karst: a descent">
+<meta property="og:description" content="Scroll down through a cave lit by your headlamp, past the bottom of the deepest known cave, and on down the Kola borehole to 12,262 m.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Karst: a descent">
+<meta name="twitter:description" content="Scroll down through a cave lit by your headlamp, past the bottom of the deepest known cave, and on down the Kola borehole to 12,262 m.">
+<meta name="twitter:image" content="og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0908'/%3E%3Cpath d='M10 6h44l-6 14-8 4-4 34h-8l-4-34-8-4z' fill='%235a4a3c'/%3E%3Ccircle cx='32' cy='30' r='5' fill='%23ffcf8a'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Karst Descent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one vertical shaft drawn on a fixed canvas; landmark notes hang at their true depth along a scrolling track; instruments are bolted to the screen edges. */
+:root{
+  --void:#0b0908;      /* cave air */
+  --ink:#efe6d8;       /* chalk text */
+  --ink-2:#d9cfc0;     /* body text */
+  --muted:#a99d8d;     /* worn text */
+  --lamp:#ffcf8a;      /* carbide-lamp warm */
+  --glow:#7ee6d4;      /* glowworm blue-green */
+  --panel:rgba(11,9,8,.84);
+  --panel-solid:#0f0c0a;
+  --line:rgba(239,230,216,.16);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--void);-webkit-text-size-adjust:100%}
+body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--lamp);text-underline-offset:2px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+#cave{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:0;display:block;pointer-events:none}
+#track{position:relative;z-index:1;width:100%;overflow:hidden}
+
+/* hero */
+.hero{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12vh 0}
+.hero .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--lamp)}
+.hero h1{font-family:var(--f-display);font-weight:900;font-size:clamp(88px,20vw,230px);line-height:.82;letter-spacing:.02em;margin:0;
+  color:var(--ink);text-shadow:0 2px 0 rgba(0,0,0,.4),0 0 60px rgba(255,207,138,.18)}
+.hero p{max-width:34em;margin:0;color:var(--ink);font-size:clamp(15px,2.2vw,18px);text-wrap:balance;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.hero .hint{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.06em;margin-top:6px;text-shadow:0 1px 6px #000}
+.hero .arrow{font-family:var(--f-mono);color:var(--lamp);animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(6px)}}
+
+/* landmark notes */
+.note{position:absolute;width:min(360px,calc(100% - 32px));display:flex;flex-direction:column;gap:6px;
+  padding:14px 16px 16px;background:var(--panel);border:1px solid var(--line);border-radius:3px;scroll-margin-top:30vh}
+.note::before{content:"";position:absolute;top:-1px;width:28px;height:1px;background:var(--lamp)}
+.note::after{content:"";position:absolute;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--lamp);box-shadow:0 0 12px var(--lamp)}
+.note.l{right:calc(50% + 28px)}
+.note.l::before{right:-29px}.note.l::after{right:-36px}
+.note.r{left:calc(50% + 28px)}
+.note.r::before{left:-29px}.note.r::after{left:-36px}
+.note .meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.note .meta .d{color:var(--lamp);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note .meta .k{color:var(--muted)}
+.note h2{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;letter-spacing:.01em;margin:0;text-wrap:balance}
+.note p{margin:0;color:var(--ink-2);font-size:14.5px}
+.note.glow .meta .d,.note.glow h2{color:var(--glow)}
+.note.glow::before,.note.glow::after{background:var(--glow);box-shadow:0 0 12px var(--glow)}
+.note.big h2{font-size:38px}
+.whisper{position:absolute;left:0;right:0;text-align:center;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);letter-spacing:.04em;
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));text-shadow:0 1px 6px #000,0 0 2px #000;text-wrap:balance}
+.scale{position:absolute;left:0;right:0;display:flex;justify-content:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.scale div{font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;color:var(--ink);background:var(--panel);border:1px dashed var(--lamp);padding:10px 14px;max-width:30em;text-align:center}
+
+.end{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.end .big{font-family:var(--f-display);font-weight:900;font-size:clamp(56px,12vw,120px);line-height:.9;color:var(--lamp);font-variant-numeric:tabular-nums}
+.end p{max-width:32em;margin:0;color:var(--ink)}
+.sources{width:min(760px,100%);text-align:left;margin-top:40px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:18px 20px 20px}
+.sources h3{font-family:var(--f-display);font-weight:800;font-size:24px;margin:0 0 8px;letter-spacing:.01em}
+.sources p{font-size:13px;color:var(--ink-2);margin:0 0 10px;max-width:none}
+.sources ul{margin:0;padding:0;list-style:none;columns:2 240px;column-gap:24px;font-size:13px}
+.sources li{break-inside:avoid;padding:3px 0;color:var(--muted)}
+.sources li a{color:var(--ink-2)}
+.sources li a:hover{color:var(--lamp)}
+.btn{font:600 13px/1 var(--f-mono);letter-spacing:.06em;color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  border-radius:3px;padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn:hover{border-color:var(--lamp);color:var(--lamp)}
+.btn[aria-pressed="true"] .dot{background:var(--lamp);box-shadow:0 0 8px var(--lamp)}
+.btn .dot{width:7px;height:7px;border-radius:50%;background:#4a4038;flex:none}
+.btn.primary{border-color:var(--lamp);color:var(--lamp);padding:12px 16px}
+
+/* instruments */
+.hud{position:fixed;z-index:5;left:max(16px,calc(env(safe-area-inset-left,0px) + 12px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  font-family:var(--f-mono);background:var(--panel-solid);border:1px solid var(--line);border-radius:3px;padding:10px 12px 11px;min-width:200px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.hud .depth{font-family:var(--f-display);font-weight:900;font-size:46px;line-height:.9;color:var(--lamp);font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:6px}
+.hud .depth small{font-size:18px;color:var(--muted);font-weight:600}
+.hud .zone{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin:4px 0 8px}
+.hud dl{display:grid;grid-template-columns:auto auto;gap:3px 14px;margin:0;font-size:11.5px;font-variant-numeric:tabular-nums}
+.hud dt{color:var(--muted)}.hud dd{margin:0;text-align:right;color:var(--ink)}
+.controls{position:fixed;z-index:6;right:max(16px,calc(env(safe-area-inset-right,0px) + 12px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.rail{position:fixed;z-index:4;right:max(22px,calc(env(safe-area-inset-right,0px) + 18px));top:10vh;height:64vh;width:80px}
+.rail .line{position:absolute;right:6px;top:0;bottom:0;width:1px;background:var(--line)}
+.rail .lbl{position:absolute;right:16px;font:10px var(--f-mono);color:var(--muted);transform:translateY(-50%);white-space:nowrap;pointer-events:none}
+.rail .lbl::after{content:"";position:absolute;right:-12px;top:50%;width:6px;height:1px;background:var(--muted)}
+.rail button{position:absolute;right:2px;width:9px;height:9px;margin-top:-4px;border-radius:50%;border:1px solid var(--muted);background:var(--void);padding:0;cursor:pointer}
+.rail button::before{content:"";position:absolute;inset:-5px -8px}
+.rail button:hover,.rail button:focus-visible{border-color:var(--lamp);background:var(--lamp);outline:none}
+.rail button.passed{border-color:var(--lamp)}
+.rail button.cave-end{border-color:var(--glow)}
+.rail .you{position:absolute;right:-1px;width:16px;height:2px;margin-top:-1px;background:var(--lamp);box-shadow:0 0 8px var(--lamp);pointer-events:none}
+.rail .tip{position:absolute;right:20px;white-space:nowrap;font:11px var(--f-mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:3px 6px;transform:translateY(-50%);pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+noscript p{position:relative;z-index:9;margin:0;padding:12px 16px;background:#3a2a1a;color:#efe6d8;font:14px system-ui,sans-serif;text-align:center}
+
+@media (max-width:899px){ .rail{display:none} }
+@media (max-width:699px){
+  .note.l,.note.r{left:50%;right:auto;transform:translateX(-50%)}
+  .note.l::before,.note.r::before{left:-1px;right:auto}
+  .note.l::after,.note.r::after{left:-4px;right:auto}
+  .note h2{font-size:26px}.note.big h2{font-size:32px}
+  .hud{left:0;right:0;bottom:0;min-width:0;border-width:1px 0 0;border-radius:0;display:flex;align-items:baseline;gap:10px;
+    padding:12px 196px calc(env(safe-area-inset-bottom,0px) + 12px) max(16px,env(safe-area-inset-left,0px))}
+  .hud .depth{font-size:30px}
+  .hud .zone{margin:0;font-size:10px;letter-spacing:.1em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hud dl{display:none}
+  .controls{right:max(12px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 10px);gap:6px;flex-wrap:nowrap}
+  .controls .btn{padding:9px 9px;font-size:11.5px;gap:6px}
+  .end{padding-bottom:80px}
+}
+@media (max-width:359px){ .controls .btn .dot{display:none} .hud{padding-right:170px} }
+@media (prefers-reduced-motion:reduce){.hero .arrow{animation:none}}
+</style>
+</head>
+<body>
+
+<noscript><p>Karst needs JavaScript to draw the cave. The notes below still read top to bottom.</p></noscript>
+<canvas id="cave" aria-hidden="true"></canvas>
+
+<main id="track">
+  <header class="hero" id="hero">
+    <div class="eyebrow">A descent through limestone, then granite</div>
+    <h1>KARST</h1>
+    <p>The deepest known caves on Earth go down about 2,200 metres. Past that, only drills have gone. Your headlamp is on. Scroll to go down.</p>
+    <div class="hint" id="hint">Move the pointer to aim your lamp · Press N to jump to the next landmark</div>
+    <div class="arrow" aria-hidden="true">▼</div>
+  </header>
+</main>
+
+<aside class="hud" id="hud" aria-label="Instruments">
+  <div class="depth"><span id="hDepth">0</span><small>m</small></div>
+  <div class="zone" id="hZone">Surface</div>
+  <dl>
+    <dt>Daylight</dt><dd id="hLight">100%</dd>
+    <dt id="hEnvLabel">Air pressure</dt><dd id="hEnv">1,013 hPa</dd>
+    <dt>Stone drop</dt><dd id="hFall">0.0 s</dd>
+  </dl>
+</aside>
+
+<div class="controls" role="group" aria-label="Controls">
+  <button class="btn" id="bLamp" type="button" aria-pressed="true"><span class="dot"></span>Lamp</button>
+  <button class="btn" id="bSound" type="button" aria-pressed="false"><span class="dot"></span>Sound</button>
+  <button class="btn" id="bNext" type="button">Next ↓</button>
+</div>
+
+<nav class="rail" id="rail" aria-label="Landmarks"><div class="line"></div><div class="you" id="railYou"></div></nav>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+(()=>{
+'use strict';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- content (depths in metres; t:1 = typical depth, not a specific site) ---------- */
+const CAVE_BOTTOM = 2223, CAVE_CLOSE = 2250, KOLA = 12262, SCALE_AT = 2350;
+const LM = [
+ {id:'entrance', d:0, s:'l', k:'Entrance zone', t:'The cave mouth', b:'Sunlight still reaches the rock here, so mosses and ferns grow on it. Every step further in gets less light than the one before.'},
+ {id:'twilight', d:6, typ:1, s:'r', k:'Twilight zone', t:'Light runs out fast', b:'Plants give up within a few metres. Animals that come and go, like moths and bats, rest here by day and feed outside at night.'},
+ {id:'bats', d:12, typ:1, s:'l', k:'Roost', t:'A bat colony', b:'Caves hold the same temperature all year and keep predators out. Bats find their way in total darkness by echolocation, with calls mostly too high for us to hear.'},
+ {id:'movile', d:18, s:'r', k:'Romania', t:'Movile Cave', b:'Under about 18 m of clay and limestone, cut off from the surface for an estimated 5.5 million years. Its food web runs on chemical energy made by bacteria, not on sunlight.'},
+ {id:'crickets', d:27, typ:1, s:'l', k:'Cave fauna', t:'Cave crickets', b:'Their antennae are often longer than their bodies. Down here, touch and smell are worth more than eyes.'},
+ {id:'dark', d:36, typ:1, s:'r', k:'Dark zone', t:'No more daylight', b:'From here on, the only light is the light you brought. The air settles near the region’s yearly average temperature and barely changes between day and night, or summer and winter.'},
+ {id:'glowworms', d:52, typ:1, s:'l', k:'New Zealand', t:'Glowworms', glow:1, b:'In the Waitomo Caves, fungus-gnat larvae (Arachnocampa luminosa) glow blue-green and lower sticky silk threads. Insects fly toward the light and get stuck. Switch your lamp off to see them properly.'},
+ {id:'stalactites', d:72, typ:1, s:'r', k:'Speleothems', t:'Stalactites', b:'Dripping water leaves a thin film of calcite behind. Growth is often around a tenth of a millimetre a year, so a 1 m stalactite can take something like 10,000 years.'},
+ {id:'olm', d:92, typ:1, s:'l', k:'Dinaric Alps', t:'The olm', b:'A blind, pale salamander that lives only in flooded caves. Olms are estimated to live for more than 100 years and can go years without eating.'},
+ {id:'siffre', d:114, typ:1, s:'r', k:'France, 1962', t:'Two months, no clock', b:'Michel Siffre lived alone in the Scarasson cave with no way to tell the time. When he came out on 14 September, he thought it was 20 August.'},
+ {id:'cavefish', d:140, typ:1, s:'l', k:'Mexico', t:'Blind cavefish', b:'Mexican cavefish (Astyanax mexicanus) start to grow eyes as embryos. Then the eyes stop developing and skin grows over them.'},
+ {id:'son-doong', d:205, typ:1, s:'r', k:'Vietnam', t:'A very big room', big:1, b:'Hang Sơn Đoòng’s main passage runs for about 5 km and is around 200 m tall in places. Its roof has collapsed in two spots, and jungle grows on the floor underneath.'},
+ {id:'pearls', d:262, typ:1, s:'l', k:'Speleothems', t:'Cave pearls', b:'In shallow pools where drips keep small grains moving, the grains pick up layer after layer of calcite and turn into smooth, round pearls.'},
+ {id:'naica', d:300, s:'r', k:'Naica, Mexico', t:'The Cave of the Crystals', b:'About 300 m underground, gypsum crystals up to around 12 m long. The air reached about 58 °C at 90–99% humidity, so unprotected visitors could only stay for minutes.'},
+ {id:'hranice', d:404, s:'l', k:'Czech Republic', t:'Hranice Abyss', b:'The deepest known flooded cave. In 2016 a remote-operated robot reached 404 m down, ran out of cable, and still had not found the bottom.'},
+ {id:'lechuguilla', d:489, s:'r', k:'New Mexico', t:'Lechuguilla Cave', b:'About 489 m deep at its lowest point. Bacteria from parts of the cave sealed off for over 4 million years turned out to resist many modern antibiotics.'},
+ {id:'vrtiglavica', d:603, s:'l', k:'Slovenia', t:'Vrtiglavica', big:1, b:'Home to the deepest known single pitch: one shaft, 603 m straight down. Without air resistance, a stone dropped from the top would fall for about 11 seconds.'},
+ {id:'rope', d:900, typ:1, s:'r', k:'Technique', t:'Single rope', b:'Cavers go down deep shafts on one fixed rope, abseiling one pitch at a time, then climb back up the same rope with mechanical ascenders.'},
+ {id:'devils-worm', d:1300, s:'l', k:'South Africa', t:'The devil’s worm', b:'Not in a cave, but at this depth. A half-millimetre nematode, Halicephalobus mephisto, was found about 1.3 km down in a gold mine, living in water trapped in the rock.'},
+ {id:'camp', d:1520, typ:1, s:'r', k:'Expeditions', t:'Camping underground', b:'Teams on the deepest caves set up camps on the way down and stay below for weeks, with hammocks, stoves and sleeping bags sealed in dry bags.'},
+ {id:'springtail', d:1980, s:'l', k:'Krubera Cave', t:'A springtail', glow:1, b:'Plutomurus ortobalaganensis, a tiny eyeless springtail collected at about 1,980 m in Krubera (Voronya) Cave in 2010. It is the deepest land animal ever found.'},
+ {id:'krubera', d:2197, s:'r', k:'Arabika Massif', t:'Krubera Cave', b:'In 2012 a diver pushed Krubera to 2,197 m, then the deepest known cave. Surveys since have put it within metres of its neighbour, Veryovkina.'},
+ {id:'veryovkina', d:CAVE_BOTTOM, s:'l', k:'Deepest known cave', t:'Veryovkina', big:1, end:1, b:'About 2,223 m, after an underwater drone surveyed its final flooded passage in 2023. Krubera and Veryovkina are close enough that the record depends on whose survey you trust. No known cave goes deeper.'},
+ {id:'mponeng', d:4000, s:'r', k:'South Africa', t:'Mponeng gold mine', b:'Around 4 km down, the deepest mine in the world. The rock reaches about 66 °C, and the mine pumps ice slurry underground to keep the tunnels workable.'},
+ {id:'everest', d:8849, s:'l', k:'For scale', t:'Everest, upside down', b:'If you hung Mount Everest from the surface, its summit would end here, at 8,849 m.'},
+ {id:'challenger', d:10935, s:'r', k:'For scale', t:'Challenger Deep', b:'The deepest point in the ocean is about 10,935 m below the waves. Even that is shallower than the hole below you.'},
+ {id:'kola', d:KOLA, s:'l', k:'Russia, 1989', t:'Kola Superdeep Borehole', big:1, b:'12,262 m, the deepest hole people have ever made, and only about 23 cm wide. Instead of the expected 100 °C, the rock at the bottom was around 180 °C, and drilling stopped.'},
+];
+const WHISPERS = [
+ [160,'Water is dripping somewhere. Every drop leaves a little calcite behind.'],
+ [350,'Still going.'],
+ [545,'Hold the lamp still. It is the only light for hundreds of metres in any direction.'],
+ [700,'A squeeze. Deep caves are mostly crawlways, sumps and cold shafts, not giant halls.'],
+ [1000,'One kilometre down.'],
+ [1150,'You can hear a stream below you. You can’t see it.'],
+ [1700,'Most of a deep expedition is waiting: for floods to drop, for ropes to be rigged.'],
+ [2100,'Almost at the bottom.'],
+ [3000,'Solid rock. No cave is known this deep. From here, only drills and mines.'],
+ [5500,'A lot of nothing. Keep scrolling.'],
+ [7200,'The borehole is narrower than a dinner plate.'],
+ [11500,'At Kola, the heat made the rock behave almost like plastic. The hole kept closing in.'],
+];
+const SOURCES = [
+ ['Veryovkina Cave','https://en.wikipedia.org/wiki/Veryovkina_Cave'],
+ ['Krubera Cave','https://en.wikipedia.org/wiki/Krubera_Cave'],
+ ['Deepest cave (Guinness)','https://www.guinnessworldrecords.com/world-records/deepest-cave'],
+ ['Vrtiglavica','https://en.wikipedia.org/wiki/Vrtiglavica'],
+ ['Hranice Abyss','https://en.wikipedia.org/wiki/Hranice_Abyss'],
+ ['Lechuguilla Cave','https://en.wikipedia.org/wiki/Lechuguilla_Cave'],
+ ['Antibiotic resistance in Lechuguilla (PLoS ONE, 2012)','https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3324550/'],
+ ['Cave of the Crystals','https://en.wikipedia.org/wiki/Cave_of_the_Crystals'],
+ ['Hang Sơn Đoòng','https://en.wikipedia.org/wiki/Hang_S%C6%A1n_%C4%90o%C3%B2ng'],
+ ['Movile Cave','https://en.wikipedia.org/wiki/Movile_Cave'],
+ ['Olm','https://en.wikipedia.org/wiki/Olm'],
+ ['Arachnocampa luminosa','https://en.wikipedia.org/wiki/Arachnocampa_luminosa'],
+ ['Michel Siffre','https://en.wikipedia.org/wiki/Michel_Siffre'],
+ ['Mexican tetra (cavefish)','https://en.wikipedia.org/wiki/Mexican_tetra'],
+ ['Cave crickets','https://en.wikipedia.org/wiki/Rhaphidophoridae'],
+ ['Stalactite','https://en.wikipedia.org/wiki/Stalactite'],
+ ['Cave pearl','https://en.wikipedia.org/wiki/Cave_pearl'],
+ ['Halicephalobus mephisto','https://en.wikipedia.org/wiki/Halicephalobus_mephisto'],
+ ['Plutomurus ortobalaganensis','https://en.wikipedia.org/wiki/Plutomurus_ortobalaganensis'],
+ ['Mponeng Gold Mine','https://en.wikipedia.org/wiki/Mponeng_Gold_Mine'],
+ ['Kola Superdeep Borehole','https://en.wikipedia.org/wiki/Kola_Superdeep_Borehole'],
+ ['Challenger Deep','https://en.wikipedia.org/wiki/Challenger_Deep'],
+ ['Mount Everest','https://en.wikipedia.org/wiki/Mount_Everest'],
+];
+
+/* ---------- depth ↔ pixels: piecewise scale, stretched where notes need room ---------- */
+const BASE=[[0,20],[100,6],[2300,1]];
+let RATES=BASE.map(s=>s[1]);
+let TOP=700, W=0, H=0, DPR=1, mobile=false;
+function px(d){ if(d<0) return d*RATES[0]; let y=0; for(let i=0;i<BASE.length;i++){ const a=BASE[i][0], b=i+1<BASE.length?BASE[i+1][0]:Infinity;
+  if(d<=a) break; y+=(Math.min(d,b)-a)*RATES[i]; } return y; }
+function inv(y){ if(y<0) return y/RATES[0]; let acc=0; for(let i=0;i<BASE.length;i++){ const a=BASE[i][0], b=i+1<BASE.length?BASE[i+1][0]:Infinity, len=(b-a)*RATES[i];
+  if(y<=acc+len) return a+(y-acc)/RATES[i]; acc+=len; } return 0; }
+const docY = d => TOP + px(d);
+const segOf = d => d<BASE[1][0]?0:d<BASE[2][0]?1:2;
+const rate = d => RATES[segOf(d)];
+
+/* ---------- noise ---------- */
+const hash = n => { const s=Math.sin(n*127.1+311.7)*43758.5453; return s-Math.floor(s); };
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+function noise(x){ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f); return lerp(hash(i)*2-1, hash(i+1)*2-1, u); }
+const bump=(d,a,b,r)=>sstep(a-r,a,d)*(1-sstep(b,b+r,d));
+
+function halfW(d){
+  if(d<0||d>=CAVE_CLOSE) return 0;
+  let h=0.27+0.05*noise(d/23)+0.025*noise(d/4.3+50);
+  if(d<12) h=lerp(0.40,h,sstep(0,12,d));
+  h+=0.17*bump(d,170,250,15);
+  h+=0.08*bump(d,288,312,6);
+  h*=1-0.62*bump(d,690,712,8)-0.6*bump(d,1395,1410,6);
+  h*=1-sstep(CAVE_BOTTOM-15,CAVE_CLOSE,d);
+  if(mobile) h*=1.22;
+  return clamp(h,0,0.49);
+}
+function walls(d){
+  const h=halfW(d); const c=0.5+0.035*noise(d/40+300);
+  return [W*(c-h*(1+0.12*noise(d/3.1+100))), W*(c+h*(1+0.12*noise(d/3.7+200))), h];
+}
+const ROCK=[[0,[104,86,66]],[100,[90,76,62]],[600,[76,66,58]],[1500,[66,60,57]],[2300,[60,54,53]],[4000,[84,66,64]],[12262,[96,62,52]]];
+function rockRGB(d){ for(let i=0;i<ROCK.length-1;i++){ const [a,ca]=ROCK[i],[b,cb]=ROCK[i+1]; if(d<=b){const t=clamp((d-a)/(b-a),0,1);return ca.map((v,j)=>Math.round(lerp(v,cb[j],t)));}} return ROCK[ROCK.length-1][1]; }
+
+/* ---------- DOM ---------- */
+const $=id=>document.getElementById(id);
+const track=$('track'), cv=$('cave'), ctx=cv.getContext('2d');
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const items=[];
+LM.forEach(m=>{ const el=document.createElement('article'); el.className='note '+m.s+(m.glow?' glow':'')+(m.big?' big':''); el.id=m.id;
+  el.innerHTML=`<div class="meta"><span class="d">${m.typ?'≈ ':''}${fmt(m.d)} m</span><span class="k">${esc(m.k)}</span></div><h2>${esc(m.t)}</h2><p>${esc(m.b)}</p>`;
+  track.appendChild(el); items.push({d:m.d, el, col:m.s, off:-3, m}); });
+WHISPERS.forEach(([d,t])=>{ const el=document.createElement('p'); el.className='whisper'; el.style.margin='0'; el.textContent=t; track.appendChild(el); items.push({d, el, col:'c', off:-8}); });
+const scaleEl=document.createElement('div'); scaleEl.className='scale';
+scaleEl.innerHTML='<div>The scale changes here. Until now, a metre of rock took several pixels of scrolling. From here it is about one pixel, or this would never end. There is no cave below, so we follow a drill instead.</div>';
+track.appendChild(scaleEl); items.push({d:SCALE_AT, el:scaleEl, col:'c', off:-40});
+items.sort((a,b)=>a.d-b.d);
+
+const endEl=document.createElement('section'); endEl.className='end'; endEl.setAttribute('aria-label','The bottom');
+endEl.innerHTML=`<div class="big">12,262 m</div>
+<p>That is about 0.19% of the way to the centre of the Earth, which is 6,371 km down. <span id="eTime"></span></p>
+<button class="btn primary" id="bUp" type="button">Climb back to the surface ↑</button>
+<div class="sources" id="sources"><h3>Notes and sources</h3>
+<p>Depths marked ≈ are typical places to meet that thing in a cave, not one specific site. Every other depth belongs to the place named. Record depths change as caves are re-surveyed; figures here are current to 2024. The instruments are estimates: air pressure uses a simple barometric formula, rock temperature below the caves is drawn between Mponeng and Kola, and the stone drop ignores air resistance.</p>
+<ul>${SOURCES.map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join('')}</ul></div>`;
+track.appendChild(endEl);
+
+const touchOnly = !matchMedia('(pointer:fine)').matches;
+if(touchOnly) $('hint').textContent='Your lamp points straight ahead · Tap Next to jump between landmarks';
+
+/* ---------- rail (log scale so the shallow landmarks don't pile up) ---------- */
+const rail=$('rail'), railYou=$('railYou');
+const railPos=d=>Math.log1p(Math.max(0,d)/10)/Math.log1p(KOLA/10);
+let tip=null;
+const railDots=LM.map(m=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',`Go to ${m.t}, ${fmt(m.d)} m`);
+  if(m.end) b.classList.add('cave-end');
+  b.addEventListener('click',()=>goTo(m.d,true));
+  b.addEventListener('mouseenter',()=>{ tip&&tip.remove(); tip=document.createElement('div'); tip.className='tip'; tip.textContent=`${fmt(m.d)} m · ${m.t}`; tip.style.top=b.style.top; rail.appendChild(tip); });
+  b.addEventListener('mouseleave',()=>{ tip&&tip.remove(); tip=null; });
+  rail.appendChild(b); return b; });
+[[10,'10 m'],[100,'100 m'],[1000,'1 km'],[10000,'10 km']].forEach(([d,t])=>{ const l=document.createElement('div'); l.className='lbl'; l.textContent=t; l.style.top=(railPos(d)*100)+'%'; rail.appendChild(l); });
+function layoutRail(){ const hgt=rail.clientHeight||1; let last=-99;
+  LM.forEach((m,i)=>{ let y=railPos(m.d)*hgt; if(y<last+11) y=last+11; last=y; railDots[i].style.top=y+'px'; }); }
+
+/* ---------- layout ---------- */
+let lastW=0, lastH=0;
+function solveSpacing(){
+  // Stretch each scale segment until no two notes that share a column overlap.
+  const GAP=28; RATES=BASE.map(s=>s[1]*(mobile?1.15:1));
+  const hs=items.map(it=>it.el.offsetHeight);
+  const conflict=(a,b)=>mobile||a.col==='c'||b.col==='c'||a.col===b.col;
+  for(let iter=0;iter<60;iter++){
+    const grow=[1,1,1]; let clash=false;
+    for(let i=1;i<items.length;i++){ const B=items[i], yB=docY(B.d)+B.off;
+      for(let j=i-1;j>=0;j--){ const A=items[j]; if(!conflict(A,B)) continue;
+        const need=docY(A.d)+A.off+hs[j]+GAP-yB; if(need<=0) continue; clash=true;
+        const k=segOf((A.d+B.d)/2), a=BASE[k][0], b=k+1<BASE.length?BASE[k+1][0]:Infinity;
+        const span=Math.max(1,(Math.min(B.d,b)-Math.max(A.d,a))*RATES[k]);
+        grow[k]=Math.max(grow[k],(span+need)/span); } }
+    if(!clash) break;
+    RATES=RATES.map((r,k)=>r*Math.min(grow[k],1.6));
+  }
+}
+function layout(force){
+  const w=innerWidth, h=innerHeight;
+  const anchor=W?inv(scrollY+H/2-TOP):null;
+  W=w; H=h; DPR=Math.min(devicePixelRatio||1,1);
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); cv.style.width=W+'px'; cv.style.height=H+'px';
+  if(!force && w===lastW && Math.abs(h-lastH)<160) return; // ignore mobile URL-bar height jitter
+  lastW=w; lastH=h; mobile=W<700;
+  const hero=$('hero');
+  TOP=Math.max(Math.round(H*0.92), hero.offsetHeight+90);
+  solveSpacing();
+  items.forEach(it=>{ it.el.style.top=(docY(it.d)+it.off)+'px'; });
+  const kola=items.find(it=>it.m&&it.m.id==='kola');
+  const endTop=docY(KOLA)+kola.el.offsetHeight+160;
+  endEl.style.top=endTop+'px';
+  track.style.height=(endTop+endEl.offsetHeight+120)+'px';
+  layoutRail();
+  if(anchor!==null && anchor>0) scrollTo(0, docY(anchor)-H/2);
+}
+
+/* ---------- rock texture ---------- */
+const pattern=(()=>{ const c=document.createElement('canvas'); c.width=c.height=192; const g=c.getContext('2d');
+  for(let i=0;i<2600;i++){ const x=Math.random()*192,y=Math.random()*192,r=Math.random()*1.6+.3, l=Math.random();
+    g.fillStyle=l>.5?`rgba(255,240,220,${.04+Math.random()*.08})`:`rgba(0,0,0,${.08+Math.random()*.18})`; g.fillRect(x,y,r,r*(.6+Math.random())); }
+  return ctx.createPattern(c,'repeat'); })();
+const MONO='600 11px "JetBrains Mono", ui-monospace, Menlo, monospace';
+
+/* ---------- lamp, drips, state ---------- */
+let lampOn=true, lx=0, ly=0, tx=0, ty=0, pointerSeen=false;
+addEventListener('pointermove',e=>{ if(e.pointerType==='mouse'||e.pointerType==='pen'){ tx=e.clientX; ty=e.clientY; pointerSeen=true; } },{passive:true});
+document.documentElement.addEventListener('mouseleave',()=>{ pointerSeen=false; });
+const drips=[]; let lastT=0, started=null, finished=false;
+
+/* ---------- render ---------- */
+function frame(now){
+  const dt=Math.min(0.05,(now-lastT)/1000||0.016); lastT=now;
+  const sy=scrollY, dC=inv(sy+H/2-TOP);
+  if(!pointerSeen){ tx=W/2; ty=H*0.46; }
+  const k=Math.min(1,dt*10); lx+=(tx-lx)*k; ly+=(ty-ly)*k;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const ySurf=TOP-sy;
+  if(ySurf>-5){ ctx.fillStyle='#0b0908'; ctx.fillRect(0,0,W,H); }
+
+  // sky and ridge above the surface
+  if(ySurf>0){
+    const g=ctx.createLinearGradient(0,ySurf-H,0,ySurf);
+    g.addColorStop(0,'#141a28'); g.addColorStop(.65,'#3a3448'); g.addColorStop(1,'#a8664a');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,ySurf);
+    for(let i=0;i<70;i++){ const x=hash(i*3.1)*W, y=ySurf-H*1.1+hash(i*7.7)*H*0.8; if(y<ySurf-140&&y>-4){ ctx.fillStyle=`rgba(255,245,230,${.25+.5*hash(i)})`; ctx.fillRect(x,y,1.4,1.4);} }
+    ctx.fillStyle='#16110f'; ctx.beginPath(); ctx.moveTo(0,ySurf+1);
+    for(let x=0;x<=W+8;x+=8){ const m=Math.abs(x-W/2)/(W/2); ctx.lineTo(x, ySurf-(40+70*m+26*noise(x/70)+10*noise(x/13))*(mobile?.6:1)); }
+    ctx.lineTo(W,ySurf+1); ctx.closePath(); ctx.fill();
+  }
+
+  // rock
+  const step=5, rows=[];
+  for(let y=Math.max(-step,Math.floor(ySurf)); y<=H+step; y+=step){ const d=inv(y+sy-TOP); if(d>=0) rows.push([y,d]); }
+  if(rows.length){ const y0=rows[0][0], y1=rows[rows.length-1][0]+step, g=ctx.createLinearGradient(0,y0,0,y1);
+    for(let i=0;i<=6;i++){ const yy=lerp(y0,y1,i/6), c=rockRGB(inv(yy+sy-TOP)); g.addColorStop(i/6,`rgb(${c[0]},${c[1]},${c[2]})`); }
+    ctx.fillStyle=g; ctx.fillRect(0,y0,W,y1-y0); }
+  const dTop=rows.length?rows[0][1]:0, dBot=rows.length?rows[rows.length-1][1]:0;
+  if(rows.length){ const y0=Math.max(0,ySurf), off=sy%192; ctx.save(); ctx.translate(0,-off); ctx.fillStyle=pattern; ctx.fillRect(0,y0+off,W,H-y0+192); ctx.restore();
+    const stepM=dTop>2300?40:dTop>100?3:1;
+    for(let m=Math.ceil(dTop/stepM)*stepM; m<=dBot; m+=stepM){ if(hash(m*.37)<.7) continue; const y=docY(m)-sy;
+      ctx.strokeStyle=`rgba(0,0,0,${.15+.25*hash(m)})`; ctx.lineWidth=1+2*hash(m*2); ctx.beginPath(); ctx.moveTo(0,y);
+      for(let x=0;x<=W;x+=40) ctx.lineTo(x,y+4*noise(x/90+m)); ctx.stroke(); } }
+
+  // cave interior
+  const L=[],R=[];
+  for(const [y,d] of rows){ if(d>CAVE_CLOSE) break; const w=walls(d); L.push([w[0],y]); R.push([w[1],y]); }
+  if(L.length>1){
+    ctx.beginPath(); ctx.moveTo(L[0][0],L[0][1]); for(const p of L) ctx.lineTo(p[0],p[1]); for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i][0],R[i][1]); ctx.closePath();
+    const g=ctx.createLinearGradient(0,0,W,0); g.addColorStop(0,'#1a1411'); g.addColorStop(.5,'#0b0908'); g.addColorStop(1,'#1a1411');
+    ctx.fillStyle=g; ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle='rgba(255,226,190,.22)';
+    ctx.beginPath(); L.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+    ctx.beginPath(); R.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+  }
+
+  if(rows.length && dTop<CAVE_CLOSE){
+    // flooded section (Hranice)
+    if(dBot>390&&dTop<420){ ctx.fillStyle='rgba(40,96,112,.55)'; for(const [y,d] of rows){ if(d<396||d>416) continue; const w=walls(d); ctx.fillRect(w[0],y,w[1]-w[0],step+1);}
+      const ys=docY(396)-sy, w=walls(396); ctx.strokeStyle='rgba(170,230,240,.6)'; ctx.lineWidth=1.5; ctx.beginPath();
+      for(let x=w[0];x<=w[1];x+=6) ctx.lineTo(x, ys+1.5*Math.sin(x/14+(reduce?0:now/500))); ctx.stroke(); }
+    // stalactite fangs on the walls
+    const sM=dTop<100?0.6:2;
+    for(let m=Math.max(3,Math.ceil(dTop/sM)*sM); m<=Math.min(dBot,CAVE_BOTTOM-10); m+=sM){
+      const h=hash(m*1.7); if(h<.5) continue; const left=h<.75; const y=docY(m)-sy; const w=walls(m); const x=left?w[0]:w[1], dir=left?1:-1;
+      const len=(10+hash(m*3.3)*26)*(rate(m)>8?1.3:1), reach=6+hash(m*5.1)*14; const c=rockRGB(m);
+      ctx.fillStyle=`rgb(${c[0]+14},${c[1]+12},${c[2]+10})`; ctx.beginPath(); ctx.moveTo(x-dir*2,y-5); ctx.lineTo(x+dir*reach,y-1);
+      ctx.lineTo(x+dir*reach*.55,y+len); ctx.lineTo(x+dir*reach*.25,y+len*.35); ctx.lineTo(x-dir*2,y+6); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(255,230,200,.18)'; ctx.lineWidth=1; ctx.stroke();
+    }
+    // roosting bats
+    if(dTop<17&&dBot>8){ ctx.fillStyle='#120d0b'; for(let m=8.5;m<16;m+=.45){ const h=hash(m*9.1); const y=docY(m)-sy; const w=walls(m); const left=h<.5;
+      const x=(left?w[0]+4+h*30:w[1]-4-(h-.5)*60);
+      ctx.beginPath(); ctx.ellipse(x,y+7,3.2,7,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x-4,y+1); ctx.lineTo(x,y+15); ctx.lineTo(x+4,y+1); ctx.closePath(); ctx.fill();
+      ctx.fillRect(x-.5,y-3,1,4);} }
+    // Naica crystals
+    if(dTop<316&&dBot>284){ ctx.lineCap='butt'; for(let i=0;i<11;i++){ const d1=290+hash(i*4.4)*20, d2=d1+(hash(i*8.8)-.5)*14; const w1=walls(d1), w2=walls(d2);
+      const fromLeft=hash(i*2.2)<.5; const x1=fromLeft?w1[0]:w1[1], x2=lerp(w2[0],w2[1],fromLeft?.55+hash(i)*.4:.45-hash(i)*.4);
+      const y1=docY(d1)-sy,y2=docY(d2)-sy; const thick=6+hash(i*6.6)*14;
+      ctx.strokeStyle='rgba(222,214,186,.8)'; ctx.lineWidth=thick; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.strokeStyle='rgba(255,252,236,.85)'; ctx.lineWidth=Math.max(1.5,thick*.18); ctx.beginPath(); ctx.moveTo(x1,y1-thick*.25); ctx.lineTo(x2,y2-thick*.25); ctx.stroke(); } }
+  }
+  // borehole
+  if(dBot>CAVE_BOTTOM && dTop<KOLA+5){ const yA=Math.max(docY(CAVE_BOTTOM+5)-sy,-5), yB=Math.min(docY(KOLA)-sy,H+5);
+    if(yB>yA){ ctx.fillStyle='#050404'; ctx.fillRect(W/2-2.5,yA,5,yB-yA); ctx.fillStyle='rgba(255,230,200,.25)'; ctx.fillRect(W/2-3.5,yA,1,yB-yA); ctx.fillRect(W/2+2.5,yA,1,yB-yA);
+      const yk=docY(KOLA)-sy; if(yk<H+20){ ctx.fillStyle='#8a7a68'; ctx.beginPath(); ctx.moveTo(W/2-5,yk-14); ctx.lineTo(W/2+5,yk-14); ctx.lineTo(W/2,yk); ctx.closePath(); ctx.fill(); } } }
+  // depth ticks
+  if(rows.length){ const tStep=dTop>=2300?1000:100; ctx.font=MONO; ctx.textAlign='right';
+    for(let m=Math.ceil(Math.max(dTop,1)/tStep)*tStep; m<=dBot; m+=tStep){ const y=docY(m)-sy; const x=m<CAVE_BOTTOM?walls(m)[0]-10:W/2-14;
+      ctx.fillStyle='rgba(255,226,190,.55)'; ctx.fillRect(x+2,y,8,1); ctx.fillText(fmt(m)+' m',x-2,y+4); } }
+
+  // drips, visible only where the lamp shines
+  if(!reduce && rows.length && dTop<CAVE_BOTTOM){ if(Math.random()<dt*4){ const y=Math.random()*H*.5; const d=inv(y+sy-TOP); if(d>2&&d<CAVE_BOTTOM-20){ const w=walls(d); drips.push({x:lerp(w[0],w[1],.1+Math.random()*.8),y,v:0}); } } }
+  ctx.fillStyle='rgba(200,225,235,.75)';
+  for(let i=drips.length-1;i>=0;i--){ const p=drips[i]; p.v+=900*dt; p.y+=p.v*dt; if(p.y>H+10||drips.length>60){drips.splice(i,1);continue;} ctx.fillRect(p.x,p.y,1.4,4+p.v*.01); }
+
+  // darkness, cut by the lamp
+  const depthDark=sstep(0,38,dC);
+  const dark=lampOn?depthDark*0.93:depthDark*0.992;
+  if(dark>0.01){
+    const Rr=Math.max(W,H)*(dC<CAVE_CLOSE?0.5:0.4)*(mobile?1.1:1);
+    if(lampOn){ const g=ctx.createRadialGradient(lx,ly,0,lx,ly,Rr); g.addColorStop(0,`rgba(255,196,128,${.07*dark})`); g.addColorStop(.45,`rgba(0,0,0,${dark*.35})`); g.addColorStop(1,`rgba(0,0,0,${dark})`); ctx.fillStyle=g; }
+    else ctx.fillStyle=`rgba(0,0,0,${dark})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // glowworms make their own light, so they're drawn over the dark
+  if(dTop<98&&dBot>38){ ctx.globalCompositeOperation='lighter'; const tt=now/1000;
+    for(let m=40;m<96;m+=.18){ if(m<dTop-3||m>dBot+3) continue; const h=hash(m*13.7); const w=walls(m); const x=lerp(w[0]+6,w[1]-6,h); const y=docY(m)-sy;
+      const tw=reduce?1:.7+.3*Math.sin(tt*1.3+m*7); const a=(lampOn?.55:1)*tw;
+      ctx.strokeStyle=`rgba(126,230,212,${.12*a})`; ctx.lineWidth=.7; ctx.beginPath(); ctx.moveTo(x,y-14-hash(m*2)*26); ctx.lineTo(x,y); ctx.stroke();
+      ctx.fillStyle=`rgba(126,230,212,${.12*a})`; ctx.beginPath(); ctx.arc(x,y,6,0,7); ctx.fill();
+      ctx.fillStyle=`rgba(190,255,240,${.9*a})`; ctx.beginPath(); ctx.arc(x,y,1.3+hash(m)*1,0,7); ctx.fill(); }
+    ctx.globalCompositeOperation='source-over'; }
+
+  hud(dC);
+  audioTick(dC);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- instruments ---------- */
+let lastHud='', lastPassed=-1, lastLive='';
+function zoneName(d){ if(d<0) return 'Surface'; if(d<6) return 'Entrance zone'; if(d<36) return 'Twilight zone'; if(d<CAVE_BOTTOM-2) return 'Dark zone'; if(d<SCALE_AT) return 'Cave floor'; if(d<KOLA-1) return 'Borehole'; return 'Borehole bottom'; }
+function hud(d){
+  const dd=clamp(d,0,KOLA), dr=Math.round(dd);
+  const s=dr+'|'+zoneName(d);
+  if(s!==lastHud){ lastHud=s;
+    $('hDepth').textContent=fmt(dd); $('hZone').textContent=zoneName(d);
+    $('hLight').textContent=d<=0?'100%':Math.max(0,Math.round((1-sstep(0,38,d))*100))+'%';
+    if(dd<CAVE_CLOSE){ $('hEnvLabel').textContent='Air pressure'; $('hEnv').textContent=fmt(1013.25*Math.exp(dd/8434))+' hPa'; }
+    else { $('hEnvLabel').textContent='Rock temp (est.)'; $('hEnv').textContent=Math.round(dd<4000?12+dd*0.0135:66+(dd-4000)*(180-66)/(KOLA-4000))+' °C'; }
+    $('hFall').textContent=Math.sqrt(2*dd/9.81).toFixed(1)+' s';
+  }
+  railYou.style.top=(railPos(dd)*100)+'%';
+  let passed=-1; for(let i=0;i<LM.length;i++) if(LM[i].d<=dd+0.5) passed=i;
+  if(passed!==lastPassed){ railDots.forEach((b,i)=>b.classList.toggle('passed',i<=passed)); lastPassed=passed;
+    const m=LM[passed]; const msg=m?`${fmt(m.d)} metres: ${m.t}`:''; if(msg!==lastLive){ lastLive=msg; $('live').textContent=msg; } }
+  if(started===null && d>1) started=performance.now();
+  if(!finished && d>=KOLA-1 && started){ finished=true; const sec=Math.round((performance.now()-started)/1000);
+    $('eTime').textContent= sec<20 ? 'You took a shortcut. Scroll back up the slow way some time.' : `You made the trip in ${sec<60?sec+' seconds':Math.floor(sec/60)+' min '+(sec%60)+' s'}.`; }
+}
+
+/* ---------- navigation ---------- */
+const smooth=()=>reduce?'auto':'smooth';
+function goTo(d,instantIfFar){ const top=docY(d)-H/2+(d===0?60:40); const far=Math.abs(top-scrollY)>H*12;
+  scrollTo({top, behavior:(instantIfFar&&far)?'auto':smooth()}); }
+function next(){ const cur=scrollY+H/2+60; const m=LM.find(m=>docY(m.d)>cur); if(m) goTo(m.d,false); else endEl.scrollIntoView({behavior:smooth()}); }
+$('bNext').addEventListener('click',next);
+addEventListener('keydown',e=>{ if((e.key==='n'||e.key==='N')&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!(e.target instanceof HTMLInputElement)){ e.preventDefault(); next(); } });
+$('bLamp').addEventListener('click',e=>{ lampOn=!lampOn; e.currentTarget.setAttribute('aria-pressed',String(lampOn)); });
+$('bUp').addEventListener('click',()=>{ started=null; finished=false; scrollTo({top:0,behavior:'auto'}); $('hero').querySelector('h1').focus?.(); });
+
+/* ---------- sound: rumble + drips with an echo that grows with the room ---------- */
+let ac=null, master, delay, fb, rumbleGain, rumbleFilter, nextDrip=0, soundOn=false;
+function initAudio(){
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
+  ac=new AC();
+  master=ac.createGain(); master.gain.value=.9; master.connect(ac.destination);
+  delay=ac.createDelay(2); delay.delayTime.value=.3; fb=ac.createGain(); fb.gain.value=.38;
+  const wet=ac.createGain(); wet.gain.value=.45; delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+  const len=ac.sampleRate*4, buf=ac.createBuffer(1,len,ac.sampleRate), ch=buf.getChannelData(0); let last=0;
+  for(let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+.02*w)/1.02; ch[i]=last*3.5; }
+  const src=ac.createBufferSource(); src.buffer=buf; src.loop=true;
+  rumbleFilter=ac.createBiquadFilter(); rumbleFilter.type='lowpass'; rumbleFilter.frequency.value=220;
+  rumbleGain=ac.createGain(); rumbleGain.gain.value=0; src.connect(rumbleFilter); rumbleFilter.connect(rumbleGain); rumbleGain.connect(master); src.start();
+  return true;
+}
+function drip(open){
+  const t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain(); const f=900+Math.random()*1100;
+  o.type='sine'; o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*1.9,t+.06);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.12,t+.004); g.gain.exponentialRampToValueAtTime(.0005,t+.16);
+  o.connect(g); g.connect(master); g.connect(delay); o.start(t); o.stop(t+.2);
+  delay.delayTime.setTargetAtTime(.12+open*1.2,t,.3);
+}
+function audioTick(d){
+  if(!ac||!soundOn) return; const t=ac.currentTime;
+  const inCave=d>2&&d<CAVE_BOTTOM-5, open=inCave?halfW(d):0;
+  rumbleGain.gain.setTargetAtTime(d<0?0:(d<CAVE_CLOSE?.05:.09),t,.4);
+  rumbleFilter.frequency.setTargetAtTime(d<CAVE_CLOSE?220:110,t,.5);
+  fb.gain.setTargetAtTime(inCave?.3+open*.8:.1,t,.4);
+  if(inCave&&t>nextDrip){ drip(open); nextDrip=t+.5+Math.random()*2.2; }
+}
+$('bSound').addEventListener('click',e=>{ const btn=e.currentTarget;
+  try{ if(!ac && !initAudio()){ btn.disabled=true; btn.title='Sound is not supported in this browser'; return; }
+    soundOn=!soundOn; btn.setAttribute('aria-pressed',String(soundOn)); if(soundOn) ac.resume(); else ac.suspend(); }
+  catch(err){ soundOn=false; btn.setAttribute('aria-pressed','false'); } });
+document.addEventListener('visibilitychange',()=>{ if(!ac) return; if(document.hidden) ac.suspend(); else if(soundOn) ac.resume(); });
+
+/* ---------- start ---------- */
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+let rT=0; addEventListener('resize',()=>{ cancelAnimationFrame(rT); rT=requestAnimationFrame(()=>layout(false)); });
+layout(true); lx=W/2; ly=H*.46;
+const startHash=()=>{ const id=decodeURIComponent(location.hash.slice(1)); const m=LM.find(m=>m.id===id); if(m) scrollTo(0,docY(m.d)-H/2+40); };
+startHash(); addEventListener('hashchange',startHash);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ layout(true); });
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
