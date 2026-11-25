@@ -13,3 +13,13 @@ A scroll-down descent through a cave, then down the Kola borehole to 12,262 m.
 
 ## Deep links
 Every landmark has a link, e.g. `/#naica`, `/#veryovkina`, `/#kola`, `/#glowworms`.
+
+## Deep Strike (bonus game)
+`dist/fighter/index.html` is a self-contained retro 1-on-1 arcade fighter set in Karst's caves (deployed at `/fighter/`).
+Four original fighters (Flint, Vesna, Grotto, Echo), three stages (Crystal Grotto, Deep Borehole, Glowworm Hollow),
+an Arcade ladder vs CPU, 2-player Versus, attract-mode demo, chiptune audio, gamepad and touch controls.
+
+- **P1:** WASD move · F punch · G kick (solo play also accepts arrows + J/K)
+- **P2:** arrows move · `.` punch · `/` kick (or Numpad 1/2)
+- Hold back to block (down-back blocks low). Esc pauses, M mutes.
+- Specials (facing right): ↓↘→+P projectile · →↓↘+P uppercut · ↓↙←+K spin kick · ↓↘→↓↘→+P super (full meter)
