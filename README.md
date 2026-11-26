@@ -16,7 +16,7 @@ Every landmark has a link, e.g. `/#naica`, `/#veryovkina`, `/#kola`, `/#glowworm
 
 ## Deep Strike (bonus game)
 `dist/fighter/index.html` is a self-contained 1-on-1 arcade fighter (smooth, cel-shaded vector art) set in Karst's caves (deployed at `/fighter/`).
-Four original fighters (Flint, Vesna, Grotto, Echo), four stages (Karst River, Crystal Grotto, Deep Borehole, Glowworm Hollow),
+Four original elemental fighters (Flint - fire, Vesna - water, Grotto - earth, Echo - wind) in a cel-shaded anime style, four stages (Karst River, Crystal Grotto, Deep Borehole, Glowworm Hollow),
 an Arcade ladder vs CPU, 2-player Versus, attract-mode demo, chiptune audio, gamepad and touch controls.
 
 - **P1:** WASD move · F punch · G kick (solo play also accepts arrows + J/K)
